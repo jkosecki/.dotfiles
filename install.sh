@@ -88,9 +88,9 @@ simple_installation()
         echo_err darkcyan "$2 is not installed in the system"
         if (get_yes_no_answer "Do you want to install it"); then
             if [ -z "$3" ]; then
-                sudo apt install $1
+                sudo apt -y install $1
             else
-                sudo apt install $3    
+                sudo apt -y install $3    
             fi
         fi
     fi
@@ -140,6 +140,34 @@ install_python()
     simple_installation pip3 "PIP for Python3" python3-pi
 }
 
+dconf_path="~/.dotfiles/dconf"
+
+install_tilix()
+{
+    which tilix >>/dev/null
+    if (($?)); then
+        echo_err darkcyan "Tilix is not installed in the system"
+        if (get_yes_no_answer "Do you want to install it"); then
+            sudo add-apt-repository -y ppa:webupd8team/terminix
+            sudo apt update && sudo apt -y install tilix
+            local tilix_conf="$dconf_path/tilix.dconf"
+            if [[ -f "$tilix_conf" ]]
+                dconf load /com/gexperts/Tilix/ < "$tilix_conf"
+            fi
+        else
+            echo_err darkgreen "Tilix won't be installed"
+        fi
+    fi
+}
+
+apply_dconf()
+{
+    echo_err darkcyan "Applying saved dconf"
+    dconf load /org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/ < "$dconf_path/custom_shortcuts.dconf"
+    dconf load /org/gnome/desktop/wm/ < "$dconf_path/wm.dconf"
+}
+
 install_vscode
 install_python
-
+install_tilix
+apply_dconf

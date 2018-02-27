@@ -1,0 +1,55 @@
+[/]
+quake-tab-position='right'
+quake-height-percent=50
+accelerators-enabled=true
+middle-click-close=true
+quake-active-monitor=false
+quake-hide-lose-focus=false
+quake-hide-lose-focus-delay=100
+sidebar-on-right=true
+terminal-title-style='small'
+recent-session-files=['/home/navarrano/.dotfiles/tilix/tilix']
+tab-position='top'
+theme-variant='dark'
+session-name='${directory}'
+use-tabs=false
+use-overlay-scrollbar=true
+new-instance-mode='new-session'
+app-title='${activeTerminalTitle} [${sessionNumber}/${sessionCount}]'
+quake-hide-headerbar=false
+terminal-title-show-when-single=false
+window-style='normal'
+
+[profiles]
+list=['2b7c4080-0ddd-46c5-8f23-563fd3ba789d']
+default='2b7c4080-0ddd-46c5-8f23-563fd3ba789d'
+
+[profiles/2b7c4080-0ddd-46c5-8f23-563fd3ba789d]
+foreground-color='#F8F8F2'
+visible-name='jkosecki'
+palette=['#272822', '#F92672', '#A6E22E', '#F4BF75', '#66D9EF', '#AE81FF', '#A1EFE4', '#F8F8F2', '#75715E', '#F92672', '#A6E22E', '#F4BF75', '#66D9EF', '#AE81FF', '#A1EFE4', '#F9F8F5']
+badge-color-set=false
+default-size-rows=30
+default-size-columns=100
+show-scrollbar=true
+use-system-font=true
+cursor-colors-set=false
+highlight-colors-set=false
+use-theme-colors=false
+bold-color-set=false
+font='Monospace 13'
+scrollback-unlimited=true
+terminal-title='${id}: ${iconTitle}'
+background-color='#272822'
+background-transparency-percent=10
+dim-transparency-percent=0
+scrollback-lines=20992
+
+[keybindings]
+app-shortcuts='<Shift><Alt>s'
+terminal-scroll-down='<Primary>j'
+win-switch-to-previous-session='<Primary><Shift>k'
+app-preferences='<Primary><Shift>p'
+terminal-scroll-up='<Primary>k'
+win-switch-to-next-session='<Primary><Shift>j'
+win-view-sidebar='F8'
