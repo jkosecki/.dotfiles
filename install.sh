@@ -5,7 +5,8 @@ enable_colors=1
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 dconf_path="$DIR/dconf"
-git_template_path="$DIR/templates/.gitconfig.tpl"
+git_template_path="$DIR/templates/gitconfig.tpl"
+git_config_template_paht="$DIR/templates/git_ssh_config.tpl"
 
 echo $DIR
 echo $dconf_path
@@ -89,6 +90,18 @@ get_yes_no_answer() {
     done
 }
 
+get_answer() {
+    if [ -z "$2" ]; then
+        read -p "$1: " answer
+    else
+        read -p "$1 ($2): " answer
+    fi
+    if [ -z "$answer" ]; then
+        answer=$2
+    fi
+    echo $answer
+}
+
 get_answer_with_confirmation()
 {
     read -p "$1" str_answer
@@ -97,6 +110,24 @@ get_answer_with_confirmation()
         read -p "$1" str_answer
     done
     echo $str_answer
+}
+
+fix_path()
+{
+    var=$1
+    path="${var/#\~/$HOME}"
+    case $path in
+        /*) 
+          path=$path
+          ;;
+        ./*)
+          path=$PWD/${path#./}
+          ;;
+        *)
+          path=$PWD/$path
+          ;;
+    esac
+    echo $path
 }
 
 simple_installation()
@@ -171,7 +202,7 @@ install_python()
 
 install_tilix()
 {
-    which tilix >>/dev/null
+    which tilix > /dev/null
     if (($?)); then
         echo_err darkcyan "Tilix is not installed in the system"
         if (get_yes_no_answer "Do you want to install it"); then
@@ -209,7 +240,7 @@ apply_dconf()
 
 install_git()
 {
-    which git >> /dev/null
+    which git > /dev/null
     if (($?)); then
         echo_err darkcyan "Git is not installed in the system"
         if ( get_yes_no_answer "Do you want to install it"); then
@@ -219,7 +250,7 @@ install_git()
         fi
     fi
 
-    local gitconfig_path=~/tmp/.gitconfig
+    local gitconfig_path=~/.gitconfig
     if ( get_yes_no_answer "Do you want to copy GIT config?"); then
         local copy=0
         if [ -f $gitconfig ]; then
@@ -237,7 +268,43 @@ install_git()
             fi
         fi
     fi
+
+    if get_yes_no_answer "Do you want to generete a new SSH key?"; then
+        local path=$(get_answer "Enter file in which to save the key" ~/.ssh/github2/id_rsa)
+        local path=$(fix_path $path)
+        local dir_path=$(dirname $path)
+            
+        if [ ! -d "$dir_path" ]; then
+            mkdir -p "$dir_path"
+        fi
+
+        local email=$(get_answer "E-mail" $email)
+        ssh-keygen -t rsa -b 4096 -C $email -f $path
+
+        ssh-add $path
+
+        if get_yes_no_answer "Do you want to add the key to SSH config?"; then
+            if [ ! -d "$HOME/.ssh" ]; then
+                mkdir -p "$HOME/.ssh"
+            fi
+            if [ ! -f "$HOME/.ssh/config" ]; then
+                touch "$HOME/.ssh/config"
+            fi
+
+            cat "$git_config_template_paht" | sed s/\${github_key_path}/$path/g >> "$HOME/.ssh/config"
+        fi
+
+        if get_yes_no_answer "Do you want to upload the key to GitHub?"; then
+            local key_title=$(uname -n)
+            local username=$(get_answer "GitHub username" $username)
+            local key_title=$(get_answer "Key title" $key_title)
+            
+            curl -u $username --data "{'title':'$key_title','key':'`cat $path`'}" https://api.github.com/user/keys
+        fi
+    fi
 }
+
+install_git
 
 run()
 {
@@ -246,8 +313,6 @@ run()
     install_tilix
     apply_dconf
 }
-
-install_git
 
 show_colors()
 {
