@@ -1,0 +1,9 @@
+# Git branch in prompt.
+export CLICOLOR=1
+export LSCOLORS=GxFxCxDxBxegedabagaced
+parse_git_branch() {
+    echo -ne "\e]0;jankos1@wkslo02015: $(basename `pwd`)\a" #set window title  to something handy    
+    git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'   
+}
+
+export PS1="\u@\h: \W\[\033[32m\]\$(parse_git_branch)\[\033[00m\] $ "

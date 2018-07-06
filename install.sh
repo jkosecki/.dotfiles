@@ -3,6 +3,15 @@
 enable_colors=1
 
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+dconf_path="$DIR/dconf"
+git_template_path="$DIR/templates/.gitconfig.tpl"
+
+echo $DIR
+echo $dconf_path
+echo $git_template_path
+
+
 echo_err_color() {
 	if (( $enable_colors )); then
 		case $1 in
@@ -33,7 +42,6 @@ echo_err_color() {
 			darkmagenta)
 				col="\e[1;35m"
 				;;
-
 		esac
 		echo -ne $col >&2;
 	fi
@@ -75,10 +83,20 @@ get_yes_no_answer() {
                 return 1
                 ;;
             *)
-                echo_err red "Answer bot understood: ${answer}"
+                echo_err red "Answer not understood: ${answer}"
                 ;;
         esac
     done
+}
+
+get_answer_with_confirmation()
+{
+    read -p "$1" str_answer
+
+    while ! get_yes_no_answer "$2 \"$str_answer\""; do
+        read -p "$1" str_answer
+    done
+    echo $str_answer
 }
 
 simple_installation()
@@ -92,6 +110,9 @@ simple_installation()
             else
                 sudo apt -y install $3    
             fi
+            return 1
+        else
+            return 0
         fi
     fi
 }
@@ -122,6 +143,7 @@ install_vscode()
         echo_err darkcyan "VSCode is not installed in the system"
         if (get_yes_no_answer "Do you want to install it"); then
             echo_err green "Installing VSCode"
+            sudo apt install curl >> /dev/null
             curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
             sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
             sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
@@ -134,13 +156,18 @@ install_vscode()
 
 install_python()
 {
-    simple_installation python2 "Python2"
+    simple_installation python "Python2"
     simple_installation python3 "Python3"
     simple_installation pip "PIP for Python2" python-pip
-    simple_installation pip3 "PIP for Python3" python3-pi
+    simple_installation pip3 "PIP for Python3" python3-pip
+    if (($?)); then
+        local libraries="setuptools wheel pipenv virtualenv"
+        echo_err darkcyan "Installing PIP3 libraries $libraries in user scope"
+        pip3 install --user $libraries
+        echo_err darkcyan "Libraries installed"
+    fi
 }
 
-dconf_path="~/.dotfiles/dconf"
 
 install_tilix()
 {
@@ -151,7 +178,7 @@ install_tilix()
             sudo add-apt-repository -y ppa:webupd8team/terminix
             sudo apt update && sudo apt -y install tilix
             local tilix_conf="$dconf_path/tilix.dconf"
-            if [[ -f "$tilix_conf" ]]
+            if [[ -f "$tilix_conf" ]]; then
                 dconf load /com/gexperts/Tilix/ < "$tilix_conf"
             fi
         else
@@ -160,14 +187,77 @@ install_tilix()
     fi
 }
 
+install_java()
+{
+    if (get_yes_no_answer "Do you want to install Java9"); then
+            sudo add-apt-repository ppa:webupd8team/java
+            sudo apt-get update
+            sudo apt-get install oracle-java9-installer
+        else
+            echo_err darkgreen "Java9 won't be installed"
+        fi
+}
+
+
 apply_dconf()
 {
     echo_err darkcyan "Applying saved dconf"
     dconf load /org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/ < "$dconf_path/custom_shortcuts.dconf"
     dconf load /org/gnome/desktop/wm/ < "$dconf_path/wm.dconf"
+    dconf load /org/gnome/shell/extensions/TaskBar/ < "$dconf_path/taskbar.dconf"
 }
 
-install_vscode
-install_python
-install_tilix
-apply_dconf
+install_git()
+{
+    which git >> /dev/null
+    if (($?)); then
+        echo_err darkcyan "Git is not installed in the system"
+        if ( get_yes_no_answer "Do you want to install it"); then
+            sudo apt install git
+        else
+            echo_err darkgreen "Git won't be installed"
+        fi
+    fi
+
+    local gitconfig_path=~/tmp/.gitconfig
+    if ( get_yes_no_answer "Do you want to copy GIT config?"); then
+        local copy=0
+        if [ -f $gitconfig ]; then
+            get_yes_no_answer "$gitconfig_path already exist. Override?"
+            copy=$?
+        fi
+
+        if ((!$copy)); then
+            if cp -f "$git_template_path" "$gitconfig_path"; then
+                username=`get_answer_with_confirmation "GIT username: " "Your GIT username is"`
+                email=`get_answer_with_confirmation "GIT email: " "Your GIT email is"`
+
+                sed -i s/\${name}/$username/g $gitconfig_path
+                sed -i s/\${email}/$email/g $gitconfig_path
+            fi
+        fi
+    fi
+}
+
+run()
+{
+    install_vscode
+    install_python
+    install_tilix
+    apply_dconf
+}
+
+install_git
+
+show_colors()
+{
+    echo_err none Hello
+    echo_err green Hello
+    echo_err red Hello
+    echo_err blue Hello
+    echo_err darkcyan Hello
+    echo_err darkgreen Hello
+    echo_err darkred Hello
+    echo_err magenta Hello
+    echo_err darkmagenta Hello
+}
