@@ -71,10 +71,17 @@ printf_err() {
 }
 
 get_yes_no_answer() {
+    local default_hint="Y/n"
+    local default_answer="Y"
+    if [ ! -z "$2" ]; then
+        local default_hint="y/N"
+        local default_answer="N"
+    fi
+
     while true; do
-        read -p "$1 (Y/n): " answer
+        read -p "$1 $default_hint: " answer
         if [ -z "$answer" ]; then
-            answer="y"
+            answer=$default_answer
         fi
         case "$answer" in
             Y*|y*)
@@ -98,6 +105,10 @@ get_answer() {
     fi
     if [ -z "$answer" ]; then
         answer=$2
+    fi
+    if [ -z "$answer" ]; then
+        echo "Value can't be null!"
+        get_answer $1 $2
     fi
     echo $answer
 }
@@ -240,18 +251,10 @@ apply_dconf()
 
 install_git()
 {
-    which git > /dev/null
-    if (($?)); then
-        echo_err darkcyan "Git is not installed in the system"
-        if ( get_yes_no_answer "Do you want to install it"); then
-            sudo apt install git
-        else
-            echo_err darkgreen "Git won't be installed"
-        fi
-    fi
+    simple_installation git Git
 
-    local gitconfig_path=~/.gitconfig
-    if ( get_yes_no_answer "Do you want to copy GIT config?"); then
+    if ( get_yes_no_answer "Do you want to create GIT config?"); then
+        local gitconfig_path=~/.gitconfig
         local copy=0
         if [ -f $gitconfig ]; then
             get_yes_no_answer "$gitconfig_path already exist. Override?"
@@ -270,7 +273,7 @@ install_git()
     fi
 
     if get_yes_no_answer "Do you want to generete a new SSH key?"; then
-        local path=$(get_answer "Enter file in which to save the key" ~/.ssh/github2/id_rsa)
+        local path=$(get_answer "Enter file in which to save the key" ~/.ssh/github/id_rsa)
         local path=$(fix_path $path)
         local dir_path=$(dirname $path)
             
@@ -298,13 +301,12 @@ install_git()
             local key_title=$(uname -n)
             local username=$(get_answer "GitHub username" $username)
             local key_title=$(get_answer "Key title" $key_title)
+            local public_key_path=$path.pub
             
-            curl -u $username --data "{'title':'$key_title','key':'`cat $path`'}" https://api.github.com/user/keys
+            curl -u $username --data "{\"title\":\"$key_title\",\"key\":\"`cat $public_key_path`\"}" https://api.github.com/user/keys > /dev/null
         fi
     fi
 }
-
-install_git
 
 run()
 {
