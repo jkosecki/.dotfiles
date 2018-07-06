@@ -8,11 +8,6 @@ dconf_path="$DIR/dconf"
 git_template_path="$DIR/templates/gitconfig.tpl"
 git_config_template_paht="$DIR/templates/git_ssh_config.tpl"
 
-echo $DIR
-echo $dconf_path
-echo $git_template_path
-
-
 echo_err_color() {
 	if (( $enable_colors )); then
 		case $1 in
