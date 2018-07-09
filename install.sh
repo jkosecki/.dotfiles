@@ -298,7 +298,20 @@ install_git()
             local key_title=$(get_answer "Key title" $key_title)
             local public_key_path=$path.pub
             
+            sudo apt install curl >> /dev/null
             curl -u $username --data "{\"title\":\"$key_title\",\"key\":\"`cat $public_key_path`\"}" https://api.github.com/user/keys > /dev/null
+        fi
+    fi
+}
+
+install_zsh()
+{
+    simple_installation zsh ZSH
+    
+    which zsh > /dev/null
+    if (($?)); then
+        if get_yes_no_answer "Do you want to install Prezto?"; then
+            $DIR/zsh/prezto_install.sh
         fi
     fi
 }
