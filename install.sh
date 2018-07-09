@@ -74,7 +74,7 @@ get_yes_no_answer() {
     fi
 
     while true; do
-        read -p "$1 $default_hint: " answer
+        read -p "$1 ($default_hint): " answer
         if [ -z "$answer" ]; then
             answer=$default_answer
         fi
@@ -309,7 +309,7 @@ install_zsh()
     simple_installation zsh ZSH
     
     which zsh > /dev/null
-    if (($?)); then
+    if ((! $?)); then
         if get_yes_no_answer "Do you want to install Prezto?"; then
             chmod 777 $DIR/zsh/prezto_install.sh
             $DIR/zsh/prezto_install.sh
