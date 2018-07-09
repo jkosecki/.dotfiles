@@ -311,6 +311,7 @@ install_zsh()
     which zsh > /dev/null
     if (($?)); then
         if get_yes_no_answer "Do you want to install Prezto?"; then
+            chmod 777 $DIR/zsh/prezto_install.sh
             $DIR/zsh/prezto_install.sh
         fi
     fi
