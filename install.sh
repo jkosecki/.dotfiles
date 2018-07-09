@@ -6,7 +6,7 @@ enable_colors=1
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 dconf_path="$DIR/dconf"
 git_template_path="$DIR/templates/gitconfig.tpl"
-git_config_template_paht="$DIR/templates/git_ssh_config.tpl"
+git_config_template_path="$DIR/templates/git_ssh_config.tpl"
 
 echo_err_color() {
 	if (( $enable_colors )); then
@@ -289,7 +289,7 @@ install_git()
                 touch "$HOME/.ssh/config"
             fi
 
-            cat "$git_config_template_paht" | sed s/\${github_key_path}/$path/g >> "$HOME/.ssh/config"
+            cat "$git_config_template_path" | sed s/\${github_key_path}/$path/g >> "$HOME/.ssh/config"
         fi
 
         if get_yes_no_answer "Do you want to upload the key to GitHub?"; then
