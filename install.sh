@@ -289,7 +289,7 @@ install_git()
                 touch "$HOME/.ssh/config"
             fi
 
-            cat "$git_config_template_path" | sed s/\${github_key_path}/$path/g >> "$HOME/.ssh/config"
+            cat "$git_config_template_path" | sed s@\${github_key_path}@$path@g >> "$HOME/.ssh/config"
         fi
 
         if get_yes_no_answer "Do you want to upload the key to GitHub?"; then
